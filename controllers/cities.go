@@ -36,3 +36,10 @@ func (s *City) Delete(ctx context.Context, in *cities.Id) (*cities.MyBoolean, er
 	}
 	return &cities.MyBoolean{Boolean: true}, err
 }
+
+// function Update
+func (s *City) Update(ctx context.Context, in *cities.City) (*cities.City, error) {
+	var cityModel models.City
+	err := cityModel.Update(ctx, s.DB, in)
+	return &cityModel.Pb, err
+}

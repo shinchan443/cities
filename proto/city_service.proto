@@ -9,4 +9,5 @@ service CitiesService {
     rpc GetCity(Id) returns (City) {}
     rpc Create(CityInput) returns (City) {}
     rpc Delete(Id) returns (MyBoolean) {}
+    rpc Update(City) returns (City) {}
 }

@@ -64,3 +64,20 @@ func (u *City) Delete(ctx context.Context, db *sql.DB, in *cities.Id) error {
 
 	return nil
 }
+
+func (u *City) Update(ctx context.Context, db *sql.DB, in *cities.City) error {
+	query := "UPDATE cities SET name=$2 WHERE id=$1 RETURNING id;"
+	stmt, err := db.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	err = stmt.QueryRowContext(ctx, in.Id, in.Name).Scan(&u.Pb.Id)
+	if err != nil {
+		return err
+	}
+
+	u.Pb.Name = in.Name
+
+	return nil
+}
