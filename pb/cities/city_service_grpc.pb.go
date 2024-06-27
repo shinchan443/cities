@@ -7,7 +7,10 @@
 package cities
 
 import (
+	context "context"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -15,10 +18,15 @@ import (
 // Requires gRPC-Go v1.62.0 or later.
 const _ = grpc.SupportPackageIsVersion8
 
+const (
+	CitiesService_GetCity_FullMethodName = "/cities.CitiesService/GetCity"
+)
+
 // CitiesServiceClient is the client API for CitiesService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CitiesServiceClient interface {
+	GetCity(ctx context.Context, in *Id, opts ...grpc.CallOption) (*City, error)
 }
 
 type citiesServiceClient struct {
@@ -29,14 +37,29 @@ func NewCitiesServiceClient(cc grpc.ClientConnInterface) CitiesServiceClient {
 	return &citiesServiceClient{cc}
 }
 
+func (c *citiesServiceClient) GetCity(ctx context.Context, in *Id, opts ...grpc.CallOption) (*City, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(City)
+	err := c.cc.Invoke(ctx, CitiesService_GetCity_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CitiesServiceServer is the server API for CitiesService service.
 // All implementations should embed UnimplementedCitiesServiceServer
 // for forward compatibility
 type CitiesServiceServer interface {
+	GetCity(context.Context, *Id) (*City, error)
 }
 
 // UnimplementedCitiesServiceServer should be embedded to have forward compatible implementations.
 type UnimplementedCitiesServiceServer struct {
+}
+
+func (UnimplementedCitiesServiceServer) GetCity(context.Context, *Id) (*City, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCity not implemented")
 }
 
 // UnsafeCitiesServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -50,13 +73,36 @@ func RegisterCitiesServiceServer(s grpc.ServiceRegistrar, srv CitiesServiceServe
 	s.RegisterService(&CitiesService_ServiceDesc, srv)
 }
 
+func _CitiesService_GetCity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CitiesServiceServer).GetCity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CitiesService_GetCity_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CitiesServiceServer).GetCity(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CitiesService_ServiceDesc is the grpc.ServiceDesc for CitiesService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CitiesService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "cities.CitiesService",
 	HandlerType: (*CitiesServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "city_service.proto",
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetCity",
+			Handler:    _CitiesService_GetCity_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "city_service.proto",
 }

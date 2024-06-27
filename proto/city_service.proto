@@ -6,5 +6,5 @@ option go_package = "pb/cities;cities";
 import "city_message.proto";
 
 service CitiesService {
-    
+    rpc GetCity(Id) returns (City) {}
 }
