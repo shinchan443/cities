@@ -14,3 +14,7 @@ message Id {
 message CityInput {
   string name= 1;
 }
+
+message MyBoolean {
+  bool boolean = 1;
+}
