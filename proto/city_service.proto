@@ -7,4 +7,5 @@ import "city_message.proto";
 
 service CitiesService {
     rpc GetCity(Id) returns (City) {}
+    rpc Create(CityInput) returns (City) {}
 }

@@ -10,3 +10,7 @@ message City {
 message Id {
   int32 id = 1;
 }
+
+message CityInput {
+  string name= 1;
+}
