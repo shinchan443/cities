@@ -18,3 +18,9 @@ message CityInput {
 message MyBoolean {
   bool boolean = 1;
 }
+
+message EmptyMessage {}
+
+message CitiesStream {
+  City city = 1;
+}

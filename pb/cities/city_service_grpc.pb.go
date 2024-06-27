@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	CitiesService_GetCity_FullMethodName = "/cities.CitiesService/GetCity"
-	CitiesService_Create_FullMethodName  = "/cities.CitiesService/Create"
-	CitiesService_Delete_FullMethodName  = "/cities.CitiesService/Delete"
-	CitiesService_Update_FullMethodName  = "/cities.CitiesService/Update"
+	CitiesService_GetCity_FullMethodName   = "/cities.CitiesService/GetCity"
+	CitiesService_Create_FullMethodName    = "/cities.CitiesService/Create"
+	CitiesService_Delete_FullMethodName    = "/cities.CitiesService/Delete"
+	CitiesService_Update_FullMethodName    = "/cities.CitiesService/Update"
+	CitiesService_GetCities_FullMethodName = "/cities.CitiesService/GetCities"
 )
 
 // CitiesServiceClient is the client API for CitiesService service.
@@ -33,6 +34,7 @@ type CitiesServiceClient interface {
 	Create(ctx context.Context, in *CityInput, opts ...grpc.CallOption) (*City, error)
 	Delete(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MyBoolean, error)
 	Update(ctx context.Context, in *City, opts ...grpc.CallOption) (*City, error)
+	GetCities(ctx context.Context, in *EmptyMessage, opts ...grpc.CallOption) (CitiesService_GetCitiesClient, error)
 }
 
 type citiesServiceClient struct {
@@ -83,6 +85,39 @@ func (c *citiesServiceClient) Update(ctx context.Context, in *City, opts ...grpc
 	return out, nil
 }
 
+func (c *citiesServiceClient) GetCities(ctx context.Context, in *EmptyMessage, opts ...grpc.CallOption) (CitiesService_GetCitiesClient, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &CitiesService_ServiceDesc.Streams[0], CitiesService_GetCities_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &citiesServiceGetCitiesClient{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type CitiesService_GetCitiesClient interface {
+	Recv() (*CitiesStream, error)
+	grpc.ClientStream
+}
+
+type citiesServiceGetCitiesClient struct {
+	grpc.ClientStream
+}
+
+func (x *citiesServiceGetCitiesClient) Recv() (*CitiesStream, error) {
+	m := new(CitiesStream)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CitiesServiceServer is the server API for CitiesService service.
 // All implementations should embed UnimplementedCitiesServiceServer
 // for forward compatibility
@@ -91,6 +126,7 @@ type CitiesServiceServer interface {
 	Create(context.Context, *CityInput) (*City, error)
 	Delete(context.Context, *Id) (*MyBoolean, error)
 	Update(context.Context, *City) (*City, error)
+	GetCities(*EmptyMessage, CitiesService_GetCitiesServer) error
 }
 
 // UnimplementedCitiesServiceServer should be embedded to have forward compatible implementations.
@@ -108,6 +144,9 @@ func (UnimplementedCitiesServiceServer) Delete(context.Context, *Id) (*MyBoolean
 }
 func (UnimplementedCitiesServiceServer) Update(context.Context, *City) (*City, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (UnimplementedCitiesServiceServer) GetCities(*EmptyMessage, CitiesService_GetCitiesServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetCities not implemented")
 }
 
 // UnsafeCitiesServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -193,6 +232,27 @@ func _CitiesService_Update_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CitiesService_GetCities_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(EmptyMessage)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(CitiesServiceServer).GetCities(m, &citiesServiceGetCitiesServer{ServerStream: stream})
+}
+
+type CitiesService_GetCitiesServer interface {
+	Send(*CitiesStream) error
+	grpc.ServerStream
+}
+
+type citiesServiceGetCitiesServer struct {
+	grpc.ServerStream
+}
+
+func (x *citiesServiceGetCitiesServer) Send(m *CitiesStream) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // CitiesService_ServiceDesc is the grpc.ServiceDesc for CitiesService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -217,6 +277,12 @@ var CitiesService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CitiesService_Update_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetCities",
+			Handler:       _CitiesService_GetCities_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "city_service.proto",
 }

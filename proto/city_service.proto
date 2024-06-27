@@ -10,4 +10,5 @@ service CitiesService {
     rpc Create(CityInput) returns (City) {}
     rpc Delete(Id) returns (MyBoolean) {}
     rpc Update(City) returns (City) {}
+    rpc GetCities(EmptyMessage) returns (stream CitiesStream) {}
 }

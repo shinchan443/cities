@@ -5,6 +5,9 @@ import (
 	"cities/pb/cities"
 	"context"
 	"database/sql"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // City struct
@@ -42,4 +45,20 @@ func (s *City) Update(ctx context.Context, in *cities.City) (*cities.City, error
 	var cityModel models.City
 	err := cityModel.Update(ctx, s.DB, in)
 	return &cityModel.Pb, err
+}
+
+// function GetCities
+func (s *City) GetCities(in *cities.EmptyMessage, stream cities.CitiesService_GetCitiesServer) error {
+	for i := 1; i < 50; i++ {
+		res := &cities.CitiesStream{
+			City: &cities.City{Id: int32(i), Name: "Jakarta"},
+		}
+
+		err := stream.Send(res)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "cannot send stream response: %v", err)
+		}
+	}
+
+	return nil
 }
